@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Space</title>
+  </head>
+
+<style>
+
+</style>
+  
+<body>
+<div>
+<canvas id="canvas"></canvas>
+</div>
+
+	<audio id="audio" controls>
+		<source src="song.m4a" type="audio/mpeg">
+	</audio>
+	
+<script type="text/javascript">
+	var canvas = document.getElementById("canvas");
+	var context = canvas.getContext("2d");
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+	var xCirc;
+	var yCirc;
+	var rCirc;
+	var animate = true;
+	var circles = [];
+	var song = document.getElementById("audio");
+	song.autoplay = true;
+	song.load();
+	
+	canvas.width = width;
+	canvas.height = height;
+	
+	makeParticles();
+
+
+	function makeParticles() {
+		xCenter = canvas.width/2;
+		yCenter = canvas.height/2;
+		particles = [];
+		for (var i = 0; i < 3000; i++){
+			particles.push(new Particle());
+		}
+	}
+	
+	function Circle(r1, r2, gradient2) {
+		var r1 = 150;
+		var r2 = canvas.width - (canvas.width/2);
+		var gradient1 = context.createRadialGradient(width/2, height/2, r1, width/2, height/2, r2);
+		
+		gradient1.addColorStop(0, "yellow");
+		gradient1.addColorStop(1, "purple");
+		context.fillStyle = gradient1;
+		context.fillRect(0, 0, canvas.width, canvas.height);
+		
+		var gradient2 = context.createRadialGradient(width/2, height/2, 120, width/2, height/2, 150);
+		gradient2.addColorStop(0, "black");
+		gradient2.addColorStop(.75, "black");
+		gradient2.addColorStop(1, "orange");
+	
+		context.beginPath();
+		context.arc(width/2, height/2, 150, 0, 2 * Math.PI, true);
+		context.fillStyle = gradient2;
+		context.fill();
+	}
+	
+	function start() {
+		
+		if(animate){
+			window.requestAnimationFrame(start);
+		}
+				
+		draw();
+		moveParticles();
+	}
+	
+
+	
+	function Particle() {
+		this.x = Math.floor((Math.random() * canvas.width) + 1);
+		this.y = Math.floor((Math.random() * canvas.height) + 1);
+		this.z = Math.floor((Math.random() * canvas.width));
+		
+		var grad = context.createRadialGradient(this.x, this.y, Math.floor((Math.random() * 10) + 1), this.x, this.y, Math.floor((Math.random() * 10) + 1));
+		var colors = ["red", "green", "blue", "orange", "purple", "yellow", "white"];
+		
+		grad.addColorStop(0, colors[Math.floor(Math.random()*colors.length)]);
+		grad.addColorStop(1, colors[Math.floor(Math.random()*colors.length)]);
+		this.color = grad;
+		this.radius = 1;
+	}
+	
+	function draw() {	
+		
+		Circle();
+		
+		for (var i = 0; i < particles.length; i++){
+			var p = particles[i];
+			
+			xP = (xCenter - p.x) * (canvas.width/p.z);
+			xP += xCenter;
+			yP = (yCenter - p.y) * (canvas.width/p.z);
+			yP += yCenter;
+			rP = (canvas.width/p.z);
+			
+			if (i % 2 == 0){
+				context.beginPath();
+				context.rect(xP, yP, rP * 3, rP * 3);
+				context.fillStyle = p.color;
+				context.fill();
+			} else if (i % 3 == 0){
+				context.beginPath();
+				context.moveTo(xP, yP);
+				context.lineTo(xP - (rP * 1), yP + (rP * 3));
+				context.lineTo(xP - (rP * 4), yP + (rP * 3));
+				context.lineTo(xP - (rP * 2), yP + (rP * 6));
+				context.lineTo(xP - (rP * 3), yP + (rP * 9));
+				context.lineTo(xP, yP + (rP * 7));
+				context.lineTo(xP + (rP * 3), yP + (rP * 9));
+				context.lineTo(xP + (rP * 2), yP + (rP * 6));
+				context.lineTo(xP + (rP * 4), yP + (rP * 3));
+				context.lineTo(xP + (rP * 1), yP + (rP * 3));
+				context.fillStyle = p.color;
+				context.fill();
+			} else if (i % 5 == 0){
+				context.beginPath();
+				context.moveTo(xP, yP);
+				context.lineTo(xP + (rP * 2), yP + (rP * 2));
+				context.lineTo(xP - (rP * 2), yP + (rP * 2));
+				context.fillStyle = p.color;
+				context.fill();
+			} else if (i % 7 == 0){
+				context.beginPath();
+				context.moveTo(xP, yP - (rP * 2));
+				//context.lineTo(xP - (rP * 6), yP - (rP * 7));
+				context.bezierCurveTo(xP - (rP * 6), yP - (rP * 11), xP - (rP * 2), yP - (rP * 12), xP, yP - (rP * 7));
+				context.bezierCurveTo(xP + (rP * 2), yP - (rP * 12), xP + (rP * 6), yP - (rP * 11), xP, yP - (rP * 2));
+				//context.lineTo(xP, yP);
+				context.fillStyle = p.color;
+				context.fill();
+			} else if (i % 9 == 0){
+				context.beginPath();
+				context.arc(xP, yP, rP, 0, 2 * Math.PI, true);
+				context.fillStyle = p.color;
+				context.fill();
+			} else {
+					context.beginPath();
+					context.font = "30px Helvetica";
+					context.fillText("Black Hole Sun", 30, 50);
+					context.fill();
+				
+			}
+			xCirc -= p.x;
+			yCirc -= p.y;
+		}
+		
+	}
+	
+	function moveParticles() {
+		for (var j = 0; j < particles.length; j++){
+			var p = particles[j];
+			p.z -= 2;
+			if (p.z <= 0){
+				p.z = canvas.width;
+			} 
+		}
+	}
+	
+	start();
+
+
+</script>
+
+</body>
+</html>
